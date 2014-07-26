@@ -1,0 +1,35 @@
+// CSV Upload
+LOAD CSV WITH HEADERS FROM "file:C:/.../nba.csv" AS csvLine
+
+// Create Player Nodes
+CREATE (p:Player {name: csvLine.Name, salary: csvLine.Salary})
+
+// Create Team Nodes
+MERGE (t:Team {name: csvLine.Team})
+
+// Create College Nodes
+MERGE (c:College {name: csvLine.College})
+
+// Create Relationships
+CREATE (p)-[:PLAYS_FOR]->(c)
+CREATE (p)-[:WENT_TO]->(t)
+
+--------------------------------------------------
+
+// Delete Null --- Deals with players with no college
+MATCH (n:College {name:"N/A"})
+OPTIONAL MATCH (n)-[r]-()
+DELETE r,n
+
+--------------------------------------------------
+
+// See college's graph
+MATCH (c:College {name:"COLLEGE_NAME"})--(p:Player)--(t:Team)
+RETURN  c, p, t
+
+--------------------------------------------------
+
+// Show a Team
+MATCH (n:Team {name:"TEAM NAME"})--(p:Player)
+OPTIONAL MATCH (p)--(c:College)
+Return n, p, c
